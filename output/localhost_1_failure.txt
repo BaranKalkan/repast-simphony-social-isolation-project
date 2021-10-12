@@ -1,0 +1,5 @@
+Error while running model
+java.lang.ArrayIndexOutOfBoundsException: Index 1 out of bounds for length 1
+	at repast.simphony.batch.parameter.ParameterLineParser.parse(ParameterLineParser.java:55)
+	at repast.simphony.batch.InstanceRunner.run(InstanceRunner.java:193)
+	at repast.simphony.batch.InstanceRunner.main(InstanceRunner.java:217)
