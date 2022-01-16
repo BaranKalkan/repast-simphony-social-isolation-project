@@ -2,15 +2,10 @@ package socialIsolation;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import cern.jet.random.Normal;
-import cern.jet.random.Uniform;
 import repast.simphony.context.Context;
 import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.parameter.Parameters;
-import repast.simphony.query.space.grid.GridCell;
-import repast.simphony.query.space.grid.GridCellNgh;
 import repast.simphony.random.RandomHelper;
 import repast.simphony.space.SpatialMath;
 import repast.simphony.space.continuous.ContinuousSpace;
@@ -19,105 +14,215 @@ import repast.simphony.space.graph.Network;
 import repast.simphony.space.grid.Grid;
 import repast.simphony.space.grid.GridPoint;
 import repast.simphony.util.ContextUtils;
-import repast.simphony.util.SimUtilities;
 
 public class Infected {
-	private ContinuousSpace<Object> space;
-	private Grid<Object> grid;
+	protected ContinuousSpace<Object> space;
+	protected Grid<Object> grid;
+	
 	private int days_infected;
 
-	private boolean symptomatic;
+	public boolean symptomatic;
 	public boolean hospitalized;
 	public boolean asympyomatic;
 
+	boolean dontGoSocial = true;
+	
 	public Hospital hospital;
 
-	private static Uniform rand;
+	GridPoint workplace_location;
+	GridPoint home_location;
+	GridPoint social_location;
+	public State CurrentState;
 
 	Parameters params = RunEnvironment.getInstance().getParameters();
 
 	private double prob_to_go_to_hospital = (double) params.getValue("prob_to_go_to_hospital");
+	private double prob_to_go_to_isolation = (double) params.getValue("prob_to_go_to_isolation");
 	private double chance_to_infect = (double) params.getValue("chance_to_infect");
 	private double chance_to_recover = (double) params.getValue("chance_to_recover");
 	private double chance_to_be_asymptomatic = (double) params.getValue("chance_to_be_asymptomatic");
 	private double prob_to_die_of_hospitalized = (double) params.getValue("prob_to_die_of_hospitalized");
 	private double prob_to_die_of_infected = (double) params.getValue("prob_to_die_of_infected");
-
-	public Infected(ContinuousSpace<Object> space, Grid<Object> grid) {
+	boolean willGoToHospital = false;
+	boolean willGoToIsolation = false;
+	
+	int maxTimer = 18;
+	int maxIsolationTimer = 100;
+	int timer = 0;
+	
+	public Infected(ContinuousSpace<Object> space, Grid<Object> grid, State currentState) {
 		this.space = space;
 		this.grid = grid;
-
+		
 		this.days_infected = 0;
 		this.symptomatic = false;
 		this.hospitalized = false;
 		this.hospital = null;
 
-		rand = RandomHelper.createUniform(0, 1);
-
-		if (Math.random() < chance_to_be_asymptomatic) {
+		
+		if (RandomHelper.nextDoubleFromTo(0d, 1d) < this.prob_to_go_to_isolation) {
+			willGoToIsolation = true;
+		}
+		
+		if (RandomHelper.nextDoubleFromTo(0d, 1d) < this.prob_to_go_to_hospital) {
+			willGoToHospital = true;
+		}
+		
+		if (RandomHelper.nextDoubleFromTo(0d, 1d) < chance_to_be_asymptomatic) {
 			asympyomatic = true;
 		} else
 			asympyomatic = false;
-	}
+		
 
-	@ScheduledMethod(start = 1, interval = 1)
+		CurrentState = currentState;
+	}
+	
+	@ScheduledMethod(start = 1, interval = 1, priority = 1)
 	public void step() {
 
-		if (rand.nextDouble() < chance_to_recover) {
-			exit_hospital();
+		if (RandomHelper.nextDoubleFromTo(0d, 1d) < chance_to_recover) {
 			BecameRecovered();
 			return;
 		}
-
-		if (this.hospitalized) {
-			if (rand.nextDouble() < prob_to_die_of_hospitalized) {
+		else if (this.hospitalized) {
+			if (RandomHelper.nextDoubleFromTo(0d, 1d) < prob_to_die_of_hospitalized) {
 				Die();
-				return;
 			}
 			return;
-		} else {
-			if (rand.nextDouble() < prob_to_die_of_infected) {
-				Die();
-				return;
-			}
+		} else if (RandomHelper.nextDoubleFromTo(0d, 1d) < prob_to_die_of_infected) {
+			Die();
+			return;
 		}
-
-		// get the grid location of this Human
-		GridPoint pt = grid.getLocation(this);
-
-		// use the GridCellNgh class to create GridCells for
-		// the surrounding neighborhood .
-		GridCellNgh<Object> nghCreator = new GridCellNgh<Object>(grid, pt, Object.class, 1, 1);
-
-		List<GridCell<Object>> gridcells = nghCreator.getNeighborhood(true);
-		SimUtilities.shuffle(gridcells, RandomHelper.getUniform());
-
-		GridCell<Object> cell = gridcells.get(0);
-
-		GridPoint point_to_move = cell.getPoint();
-
-		moveTowards(point_to_move);
-
-		infect();
-
-		// ------------------
-		if (this.days_infected > 14) {
+		
+		if (this.days_infected > 50 && !this.asympyomatic) {
 			this.symptomatic = true;
+			
 		}
-
-		if (!this.asympyomatic && this.symptomatic) {
-
-			if (rand.nextDouble() < this.prob_to_go_to_hospital) {
-				go_to_hospital();
-			}
+		
+		if(this.days_infected > 600) {
+			BecameRecovered();
+			return;
 		}
-
+		
 		this.days_infected++;
+				
+		switch (CurrentState) {
+		
+			case GOINGHOME:
+				if(grid.getDistance(CheckAndReturnHomeLocation(), grid.getLocation(this)) > 1)
+				{
+					infect();
+					moveTowards(home_location);
+				} else {
+					CurrentState = State.HOME;
+				}
+				break;
+			case HOME:
+				timer--;
+				if(timer < 1)
+				{
+					timer = maxTimer;
+					CurrentState = State.GOINGWORKPLACE;
+				}
+				break;
+				
+			case GOINGWORKPLACE:
 
-		// ------------
+				if(grid.getDistance(CheckAndReturnWorkplaceLocation(), grid.getLocation(this)) > 1)
+				{
+					infect();
+					moveTowards(workplace_location);
+				} else {
+					CurrentState = State.WORK;
+				}
+				break;
+			case WORK:
+				infect();
+				timer--;
+				if(timer < 1)
+				{
+					timer = maxTimer;
+					if(dontGoSocial)
+					{
+
+						CurrentState = State.GOINGHOME;
+					}
+					else
+					{
+						CurrentState = State.GOINGSOCIAL;
+						
+					}
+				}
+				break;
+			case GOINGSOCIAL:
+				if(grid.getDistance(CheckAndReturnSocialLocation(), grid.getLocation(this)) > 1)
+				{
+					infect();
+					moveTowards(social_location);
+				} else {
+					CurrentState = State.SOCIAL;
+				}
+				break;
+			case SOCIAL:
+
+				infect();
+				timer--;
+				if(timer < 1)
+				{
+					timer = maxTimer;
+					CurrentState = State.GOINGHOME;
+				}
+				break;
+			case HOSPITALIZED:
+				
+				break;
+			case GOINGISOLATION:
+				if(grid.getDistance(CheckAndReturnHomeLocation(), grid.getLocation(this)) > 1)
+				{
+					moveTowards(home_location);
+				} else {
+					CurrentState = State.ISOLATION;
+				}
+				break;
+			case ISOLATION:
+				
+				break;
+			default:
+				CurrentState = State.GOINGHOME;
+				break;
+			}
 	}
+	
+	private GridPoint CheckAndReturnHomeLocation() {
+		if(home_location == null) {
+			Home targetHome = Utils.FindTargetHome();
+			home_location = grid.getLocation(targetHome);
+			return home_location;
+		}
+		return home_location;
+	}
+	
+	private GridPoint CheckAndReturnWorkplaceLocation() {
+		if(workplace_location == null) {
+			Workplace targetWorkplace = Utils.FindTargetWorkplace();
+			workplace_location = grid.getLocation(targetWorkplace);
+			return workplace_location;
+		}
+		return workplace_location;
+	}
+	
+	private GridPoint CheckAndReturnSocialLocation() {
+		if(social_location == null) {
+			Social targetSocial = Utils.FindTargetSocial();
+			social_location = grid.getLocation(targetSocial);
+			return social_location;
+		}
+		return social_location;
+	}
+	
 
-	public void moveTowards(GridPoint pt) {
+	
+	public boolean moveTowards(GridPoint pt) {
 		// only move if we are not already in this grid location
 		if (!pt.equals(grid.getLocation(this))) {
 			NdPoint myPoint = space.getLocation(this);
@@ -126,6 +231,10 @@ public class Infected {
 			space.moveByVector(this, 2, angle, 0);
 			myPoint = space.getLocation(this);
 			grid.moveTo(this, (int) myPoint.getX(), (int) myPoint.getY());
+			return false;
+		}
+		else {
+			return true;
 		}
 	}
 
@@ -133,9 +242,13 @@ public class Infected {
 	public void infect() {
 		GridPoint pt = grid.getLocation(this);
 		List<Object> healthy = new ArrayList<Object>();
-		// Get all healthys at the new location
+		// Get all healthy at the new location
 		for (Object obj : grid.getObjectsAt(pt.getX(), pt.getY())) {
 			if (obj instanceof Healthy) {
+				if(obj instanceof Recovered)
+				{
+					continue;
+				}
 				healthy.add(obj);
 			}
 		}
@@ -143,12 +256,12 @@ public class Infected {
 		// infect any random healthy
 		if (healthy.size() > 0) {
 			for (Object obj : healthy) {
-				double random = Math.random();
-				if (rand.nextDouble() <= chance_to_infect && !((Healthy) obj).social_isolate) {
+				if (RandomHelper.nextDoubleFromTo(0d, 1d) <= chance_to_infect && !((Healthy) obj).social_isolate) {
+					
 					NdPoint spacePt = space.getLocation(obj);
 					Context<Object> context = ContextUtils.getContext(obj);
 					context.remove(obj);
-					Infected infected = new Infected(space, grid);
+					Infected infected = new Infected(space, grid, State.INIT);
 					context.add(infected);
 					space.moveTo(infected, spacePt.getX(), spacePt.getY());
 					grid.moveTo(infected, pt.getX(), pt.getY());
@@ -159,66 +272,17 @@ public class Infected {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	public Hospital getNearestHospital() {
-		double minDistSq = Double.POSITIVE_INFINITY;
-		Hospital minAgent = null;
-		// NdPoint myLocation;
-		Context<Object> context = ContextUtils.getContext(this);
-
-		for (Object agent : context) {
-			if (agent instanceof Hospital) {
-				Hospital thisHospital = (Hospital) agent;
-				if (thisHospital.current_capacity > 0) {
-					NdPoint currloc = space.getLocation(this);
-					NdPoint loc = space.getLocation(agent);
-
-					// sanirim burayi yanlis yazmislar düzelttim
-					double distSq = (currloc.getX() - loc.getX()) * (currloc.getX() - loc.getX())
-							+ (currloc.getY() - loc.getY()) * (currloc.getY() - loc.getY());
-
-					if (distSq < minDistSq) {
-						minDistSq = distSq;
-						// burada direkt thishospital kullanilabilir
-						minAgent = (Hospital) agent;
-					}
-
-				}
-			}
-		}
-
-		if (minAgent != null)
-			minAgent.current_capacity--;
-
-		return minAgent;
-	}
-
-	private void go_to_hospital() {
-
-		Hospital nearest_hospital = getNearestHospital();
-		if (nearest_hospital == null)
-			return;
-
-		NdPoint target_location = space.getLocation(nearest_hospital);
-		space.moveTo(this, (double) target_location.getX(), (double) target_location.getY());
-		grid.moveTo(this, (int) target_location.getX(), (int) target_location.getY());
-
-		this.hospital = nearest_hospital;
-		hospitalized = true;
-
-	}
-
-	@SuppressWarnings("unchecked")
 	private void BecameRecovered() {
 		NdPoint spacePt = space.getLocation(this);
 		GridPoint pt = grid.getLocation(this);
 
 		Context<Object> context = ContextUtils.getContext(this);
-		Recovered recovered = new Recovered(space, grid);
+		Recovered recovered = new Recovered(space, grid, CurrentState);
 		context.add(recovered);
 		space.moveTo(recovered, spacePt.getX(), spacePt.getY());
 		grid.moveTo(recovered, pt.getX(), pt.getY());
 
+		exit_hospital();
 		context.remove(this);
 	}
 
@@ -232,10 +296,7 @@ public class Infected {
 	@SuppressWarnings("unchecked")
 	private void Die() {
 
-		if (this.hospital != null) {
-			hospital.current_capacity++;
-			this.hospital = null;
-		}
+		exit_hospital();
 
 		GridPoint pt = grid.getLocation(this);
 

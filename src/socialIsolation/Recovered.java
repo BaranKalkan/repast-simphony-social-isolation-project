@@ -1,88 +1,206 @@
 package socialIsolation;
 
-import java.util.List;
 
 import repast.simphony.context.Context;
 import repast.simphony.engine.environment.RunEnvironment;
-//import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.parameter.Parameters;
-//import repast.simphony.parameter.Parameters;
-import repast.simphony.query.space.grid.GridCell;
-import repast.simphony.query.space.grid.GridCellNgh;
-import repast.simphony.random.RandomHelper;
-import repast.simphony.space.*;
+import repast.simphony.space.SpatialMath;
 import repast.simphony.space.continuous.*;
 import repast.simphony.space.grid.*;
 import repast.simphony.util.ContextUtils;
-import repast.simphony.util.SimUtilities;
 
 public class Recovered {
 
 	private ContinuousSpace<Object> space;
 	private Grid<Object> grid;
+
+	boolean dontGoSocial = true;
+	int maxIsolationTimer = 100;
+	int maxTimer = 12;
+	int timer = 0;
+	
+	State CurrentState;
+	GridPoint workplace_location;
+	GridPoint home_location;
+	GridPoint social_location;
+	
 	private int days_immune;
-
 	Parameters params = RunEnvironment.getInstance().getParameters();
-
-	private int days_of_immunity = (int) params.getValue("days_of_immunity");
+	public int days_of_immunity = (int) params.getValue("days_of_immunity");
 
 	public Recovered(ContinuousSpace<Object> space, Grid<Object> grid) {
+		this.days_immune = 0;
 		this.space = space;
 		this.grid = grid;
+		CurrentState = State.INIT;
+	}
+	
+	public Recovered(ContinuousSpace<Object> space, Grid<Object> grid, State currentState) {
 		this.days_immune = 0;
+		this.space = space;
+		this.grid = grid;
+		CurrentState = currentState;
 	}
-
-	public void moveTowards(GridPoint pt) {
-		// only move if we are not already in this grid location
-		if (!pt.equals(grid.getLocation(this))) {
-			NdPoint myPoint = space.getLocation(this);
-			NdPoint otherPoint = new NdPoint(pt.getX(), pt.getY());
-			double angle = SpatialMath.calcAngleFor2DMovement(space, myPoint, otherPoint);
-			space.moveByVector(this, 2, angle, 0);
-			myPoint = space.getLocation(this);
-			grid.moveTo(this, (int) myPoint.getX(), (int) myPoint.getY());
-		}
-	}
-
-	@ScheduledMethod(start = 1, interval = 1)
+	
+	
+	
+	@ScheduledMethod(start = 1, interval = 1, priority = 1 )
 	public void step() {
-
+		switch (CurrentState) {
+		case INIT:
+			
+			Workplace targetWorkplace = Utils.FindTargetWorkplace();
+			Home targetHome = Utils.FindTargetHome();
+			Social targetSocial = Utils.FindTargetSocial();
+				
+			workplace_location = grid.getLocation(targetWorkplace);
+			home_location = grid.getLocation(targetHome);
+			social_location = grid.getLocation(targetSocial);
+			
+			CurrentState = State.GOINGHOME;
+			break;
+			
+	
+		case GOINGHOME:
+			if(grid.getDistance(CheckAndReturnHomeLocation(), grid.getLocation(this)) > 1)
+			{
+				moveTowards(home_location);
+			} else {
+				CurrentState = State.HOME;
+			}
+			break;
+		case HOME:
+			timer--;
+			if(timer < 1)
+			{
+				timer = maxTimer;
+				CurrentState = State.GOINGWORKPLACE;
+			}
+			break;
+		case GOINGWORKPLACE:
+			if(grid.getDistance(CheckAndReturnWorkplaceLocation(), grid.getLocation(this)) > 1)
+			{
+				moveTowards(workplace_location);
+			} else {
+				CurrentState = State.WORK;
+			}
+			break;
+		case WORK:
+			timer--;
+			if(timer < 1)
+			{
+				timer = maxTimer;
+				if(dontGoSocial)
+				{
+					CurrentState = State.GOINGHOME;
+				}
+				else
+				{
+					CurrentState = State.GOINGSOCIAL;
+				}
+			}
+			break;
+		case GOINGSOCIAL:
+			if(grid.getDistance(CheckAndReturnSocialLocation(), grid.getLocation(this)) > 1)
+			{
+				moveTowards(social_location);
+			} else {
+				CurrentState = State.SOCIAL;
+			}
+			break;
+		case SOCIAL:
+			timer--;
+			if(timer < 1)
+			{
+				timer = maxTimer;
+				CurrentState = State.GOINGHOME;
+			}
+			break;
+		case GOINGISOLATION:
+			if(grid.getDistance(CheckAndReturnHomeLocation(), grid.getLocation(this)) > 1)
+			{
+				moveTowards(home_location);
+			} else {
+				CurrentState = State.ISOLATION;
+			}
+			break;
+		case ISOLATION:
+			
+			break;
+		default:
+			break;
+		}
+	
+		
 		days_immune++;
 
 		if (days_immune > days_of_immunity) {
 			BecameNormal();
 			return;
 		}
-
-		// get the grid location of this Human
-		GridPoint pt = grid.getLocation(this);
-
-		// use the GridCellNgh class to create GridCells for
-		// the surrounding neighborhood .
-		GridCellNgh<Object> nghCreator = new GridCellNgh<Object>(grid, pt, Object.class, 1, 1);
-
-		List<GridCell<Object>> gridcells = nghCreator.getNeighborhood(true);
-		SimUtilities.shuffle(gridcells, RandomHelper.getUniform());
-
-		GridCell<Object> cell = gridcells.get(0);
-
-		GridPoint point_to_move = cell.getPoint();
-		moveTowards(point_to_move);
 	}
 
+	
+	private GridPoint CheckAndReturnHomeLocation() {
+		if(home_location == null) {
+			Home targetHome = Utils.FindTargetHome();
+			home_location = grid.getLocation(targetHome);
+			return home_location;
+		}
+		return home_location;
+	}
+	
+	private GridPoint CheckAndReturnWorkplaceLocation() {
+		if(workplace_location == null) {
+			Workplace targetWorkplace = Utils.FindTargetWorkplace();
+			workplace_location = grid.getLocation(targetWorkplace);
+			return workplace_location;
+		}
+		return workplace_location;
+	}
+	
+	private GridPoint CheckAndReturnSocialLocation() {
+		if(social_location == null) {
+			Social targetSocial = Utils.FindTargetSocial();
+			social_location = grid.getLocation(targetSocial);
+			return social_location;
+		}
+		return social_location;
+	}
+	
+
+	
+	public boolean moveTowards(GridPoint pt) {
+		if (!pt.equals(grid.getLocation(this))) {
+			NdPoint myPoint = space.getLocation(this);
+			NdPoint otherPoint = new NdPoint(pt.getX(), pt.getY());
+			
+			double angle = SpatialMath.calcAngleFor2DMovement(space, myPoint, otherPoint);
+			
+			space.moveByVector(this, 1, angle, 0);
+			
+			myPoint = space.getLocation(this);
+			grid.moveTo(this, (int) myPoint.getX(), (int) myPoint.getY());
+			
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
 	@SuppressWarnings("unchecked")
 	private void BecameNormal() {
 		NdPoint spacePt = space.getLocation(this);
 		GridPoint pt = grid.getLocation(this);
 
 		Context<Object> context = ContextUtils.getContext(this);
-		Healthy healthy = new Healthy(space, grid);
+		Healthy healthy = new Healthy(space, grid, CurrentState);
 		context.add(healthy);
 		space.moveTo(healthy, spacePt.getX(), spacePt.getY());
 		grid.moveTo(healthy, pt.getX(), pt.getY());
 
 		context.remove(this);
 	}
-
 }

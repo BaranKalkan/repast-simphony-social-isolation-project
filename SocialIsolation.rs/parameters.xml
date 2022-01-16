@@ -1,62 +1,72 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <parameters>
-					<parameter name="randomSeed" displayName="Default Random Seed" type="int" 
-						defaultValue="281323356" 
+					<parameter name="time_to_start_vaccination" displayName="time_to_start_vaccination" type="int" 
+						defaultValue="2000" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 											/>
-				<parameter name="prob_to_die_of_infected" displayName="Probability To Die Of Infected" type="double" 
-						defaultValue="0.007" 
+				<parameter name="prob_to_go_to_isolation" displayName="prob_to_go_to_isolation" type="double" 
+						defaultValue="0.5" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
 											/>
 				<parameter name="chance_to_recover" displayName="Chance To Recover" type="double" 
-						defaultValue="0.03" 
+						defaultValue="0.005" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
-											/>
-				<parameter name="prob_to_die_of_hospitalized" displayName="Probability To Die Of Hospitalized" type="double" 
-						defaultValue="0.001" 
-						isReadOnly="false" 
-						converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
-											/>
-				<parameter name="hospital_count" displayName="Hospital Count" type="int" 
-						defaultValue="1" 
-						isReadOnly="false" 
-						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 											/>
 				<parameter name="prob_to_go_to_hospital" displayName="Probability To Go To Hospital" type="double" 
-						defaultValue="0.1" 
-						isReadOnly="false" 
-						converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
-											/>
-				<parameter name="chance_to_be_asymptomatic" displayName="chance_to_be_asymptomatic" type="double" 
-						defaultValue="0.4" 
+						defaultValue="0.5" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
 											/>
 				<parameter name="prob_to_social_isolate" displayName="Probability To Social Isolate" type="double" 
-						defaultValue="0.3" 
+						defaultValue="0.0" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
 											/>
 				<parameter name="healthy_count" displayName="Healthy Count At Start" type="int" 
-						defaultValue="4000" 
+						defaultValue="6000" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 											/>
+				<parameter name="randomSeed" displayName="Default Random Seed" type="int" 
+						defaultValue="142948016" 
+						isReadOnly="false" 
+						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+											/>
+				<parameter name="prob_to_die_of_infected" displayName="Probability To Die Of Infected" type="double" 
+						defaultValue="5.0E-5" 
+						isReadOnly="false" 
+						converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
+											/>
+				<parameter name="prob_to_die_of_hospitalized" displayName="Probability To Die Of Hospitalized" type="double" 
+						defaultValue="1.0E-5" 
+						isReadOnly="false" 
+						converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
+											/>
+				<parameter name="hospital_count" displayName="Hospital Count" type="int" 
+						defaultValue="10" 
+						isReadOnly="false" 
+						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
+											/>
+				<parameter name="chance_to_be_asymptomatic" displayName="chance_to_be_asymptomatic" type="double" 
+						defaultValue="0.5" 
+						isReadOnly="false" 
+						converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
+											/>
 				<parameter name="infected_count" displayName="Infected Count At Start" type="int" 
-						defaultValue="200" 
+						defaultValue="50" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 											/>
 				<parameter name="chance_to_infect" displayName="Chance To Infect" type="double" 
-						defaultValue="0.9" 
+						defaultValue="0.8" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
 											/>
 				<parameter name="days_of_immunity" displayName="days_of_immunity" type="int" 
-						defaultValue="120" 
+						defaultValue="200" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 											/>

@@ -11,6 +11,10 @@
       <string>repast.simphony.visualizationOGL2D.DefaultStyleOGL2D</string>
     </entry>
     <entry>
+      <string>socialIsolation.Workplace</string>
+      <string>repast.simphony.visualization.editedStyle.EditedStyle2D</string>
+    </entry>
+    <entry>
       <string>socialIsolation.Hospital</string>
       <string>repast.simphony.visualization.editedStyle.EditedStyle2D</string>
     </entry>
@@ -20,6 +24,10 @@
     </entry>
     <entry>
       <string>socialIsolation.Infected</string>
+      <string>repast.simphony.visualization.editedStyle.EditedStyle2D</string>
+    </entry>
+    <entry>
+      <string>socialIsolation.Home</string>
       <string>repast.simphony.visualization.editedStyle.EditedStyle2D</string>
     </entry>
     <entry>
@@ -37,6 +45,10 @@
       <null/>
     </entry>
     <entry>
+      <string>socialIsolation.Workplace</string>
+      <string>socialIsolation.Workplace.style_5.xml</string>
+    </entry>
+    <entry>
       <string>socialIsolation.Hospital</string>
       <string>socialIsolation.Hospital.style_2.xml</string>
     </entry>
@@ -47,6 +59,10 @@
     <entry>
       <string>socialIsolation.Infected</string>
       <string>socialIsolation.Infected.style_3.xml</string>
+    </entry>
+    <entry>
+      <string>socialIsolation.Home</string>
+      <string>socialIsolation.Home.style_4.xml</string>
     </entry>
     <entry>
       <string>socialIsolation.Dead</string>
@@ -63,7 +79,7 @@
     <pType>LAST</pType>
     <duration>-1.0</duration>
     <frequency>REPEAT</frequency>
-    <hashCode>-1118417465</hashCode>
+    <hashCode>-1727205723</hashCode>
   </schedParams>
   <layoutClassName>foo.bar.baz</layoutClassName>
   <layoutProjection>space</layoutProjection>
@@ -71,27 +87,35 @@
   <layerOrder>
     <entry>
       <string>socialIsolation.Recovered</string>
-      <int>1</int>
-    </entry>
-    <entry>
-      <string>socialIsolation.SocialIsolationBuilder</string>
-      <int>2</int>
-    </entry>
-    <entry>
-      <string>socialIsolation.Hospital</string>
-      <int>4</int>
-    </entry>
-    <entry>
-      <string>socialIsolation.Healthy</string>
-      <int>5</int>
-    </entry>
-    <entry>
-      <string>socialIsolation.Infected</string>
       <int>3</int>
     </entry>
     <entry>
-      <string>socialIsolation.Dead</string>
+      <string>socialIsolation.SocialIsolationBuilder</string>
+      <int>4</int>
+    </entry>
+    <entry>
+      <string>socialIsolation.Workplace</string>
       <int>0</int>
+    </entry>
+    <entry>
+      <string>socialIsolation.Hospital</string>
+      <int>6</int>
+    </entry>
+    <entry>
+      <string>socialIsolation.Healthy</string>
+      <int>7</int>
+    </entry>
+    <entry>
+      <string>socialIsolation.Infected</string>
+      <int>5</int>
+    </entry>
+    <entry>
+      <string>socialIsolation.Home</string>
+      <int>1</int>
+    </entry>
+    <entry>
+      <string>socialIsolation.Dead</string>
+      <int>2</int>
     </entry>
   </layerOrder>
   <projections>

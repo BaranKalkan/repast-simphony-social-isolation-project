@@ -1,0 +1,15 @@
+package socialIsolation;
+
+public enum State {
+	INIT,
+	WORK,
+	HOME,
+	SOCIAL,
+	GOINGSOCIAL,
+	GOINGWORKPLACE,
+	GOINGHOME,
+	TRAVEL,
+	ISOLATION,
+	HOSPITALIZED,
+	GOINGISOLATION,
+}
