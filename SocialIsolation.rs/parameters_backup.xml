@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <parameters>
 					<parameter name="time_to_start_vaccination" displayName="time_to_start_vaccination" type="int" 
-						defaultValue="2000" 
+						defaultValue="2400" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 											/>
 				<parameter name="prob_to_go_to_isolation" displayName="prob_to_go_to_isolation" type="double" 
-						defaultValue="0.5" 
+						defaultValue="1.0" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
 											/>
@@ -16,7 +16,7 @@
 						converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
 											/>
 				<parameter name="prob_to_go_to_hospital" displayName="Probability To Go To Hospital" type="double" 
-						defaultValue="0.5" 
+						defaultValue="1.0" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
 											/>
@@ -51,7 +51,7 @@
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 											/>
 				<parameter name="chance_to_be_asymptomatic" displayName="chance_to_be_asymptomatic" type="double" 
-						defaultValue="0.5" 
+						defaultValue="0.2" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
 											/>
@@ -66,7 +66,7 @@
 						converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
 											/>
 				<parameter name="days_of_immunity" displayName="days_of_immunity" type="int" 
-						defaultValue="200" 
+						defaultValue="280" 
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 											/>

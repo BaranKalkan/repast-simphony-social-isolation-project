@@ -195,5 +195,17 @@ public class Healthy {
 		return social_location;
 	}
 	
-
+	@ScheduledMethod(start = 1200)
+	public void StopGoingSocial() { 
+		dontGoSocial = true;
+	}
+	
+	/*
+	 * @ScheduledMethod(start = 1300, priority = 0) public void FullIsolation() {
+	 * CurrentState = State.GOINGISOLATION; }
+	 * 
+	 * @ScheduledMethod(start = 2000) public void EndFullIsolation() { CurrentState
+	 * = State.GOINGHOME; }
+	 */
+	
 }

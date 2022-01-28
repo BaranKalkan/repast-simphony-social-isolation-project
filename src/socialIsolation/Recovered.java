@@ -169,7 +169,18 @@ public class Recovered {
 		return social_location;
 	}
 	
+	@ScheduledMethod(start = 1200)
+	public void StopGoingSocial() { 
+		dontGoSocial = true;
+	}
 
+	/*
+	 * @ScheduledMethod(start = 1300, priority = 0) public void FullIsolation() {
+	 * CurrentState = State.GOINGISOLATION; }
+	 * 
+	 * @ScheduledMethod(start = 2000) public void EndFullIsolation() { CurrentState
+	 * = State.GOINGHOME; }
+	 */
 	
 	public boolean moveTowards(GridPoint pt) {
 		if (!pt.equals(grid.getLocation(this))) {

@@ -16,7 +16,6 @@ public class Hospital {
 	Parameters params = RunEnvironment.getInstance().getParameters();
 
 	private int number_of_rooms = 10; // (Integer) params.getValue("number_of_rooms");
-	private int time_to_start_vaccination = (int) params.getValue("time_to_start_vaccination");
 	public int current_capacity;
 
 	private ContinuousSpace<Object> space;
@@ -32,32 +31,30 @@ public class Hospital {
 	@ScheduledMethod(start = 1, interval = 1)
 	public void step() {
 		
-			Context<Object> context = ContextUtils.getContext(this);
-			IndexedIterable<Object> indexedItarable = context.getObjects(Infected.class);
-			for (Object obj : indexedItarable) {
+		Context<Object> context = ContextUtils.getContext(this);
+		IndexedIterable<Object> indexedItarable = context.getObjects(Infected.class);
+		for (Object obj : indexedItarable) {
 
-				Infected infected = (Infected) obj;
+			Infected infected = (Infected) obj;
+
+			if(infected.symptomatic){
 				if(current_capacity > 0)
 				{
-					if(infected.symptomatic){
-						if(infected.willGoToHospital){
-							infected.CurrentState = State.HOSPITALIZED;
-							current_capacity--;
-							NdPoint target_location = space.getLocation(this);
-							space.moveTo(infected, (double) target_location.getX(), (double) target_location.getY());
-							grid.moveTo(infected, (int) target_location.getX(), (int) target_location.getY());
+					if(infected.willGoToHospital){
+						infected.CurrentState = State.HOSPITALIZED;
+						current_capacity--;
+						NdPoint target_location = space.getLocation(this);
+						space.moveTo(infected, (double) target_location.getX(), (double) target_location.getY());
+						grid.moveTo(infected, (int) target_location.getX(), (int) target_location.getY());
 
-							infected.hospital = this;
-							infected.hospitalized = true;
-						}
+						infected.hospital = this;
+						infected.hospitalized = true;
 					}
-				}
-				else if(infected.willGoToIsolation)
-				{
-					infected.CurrentState = State.ISOLATION;
+				} else if(infected.willGoToIsolation) {
+					infected.CurrentState = State.GOINGISOLATION;
 				}
 			}
-		
+		}
 	}
 	
     @ScheduledMethod(start = 2400, interval = 1)
@@ -71,13 +68,14 @@ public class Hospital {
 		
 		int current = 0;
 		for (Object obj : indexedItarable) {
-			current++;
-			if ( current > max)
-				break;
+			
 			if( obj instanceof Recovered)
 			{
 				continue;
 			}
+			
+			if ( ++current > max)
+				break;
 			toVacc.add((Healthy)obj);
 		}
 		
@@ -93,7 +91,7 @@ public class Hospital {
 			context.add(recovered);
 			space.moveTo(recovered, agentSpacePt.getX(), agentSpacePt.getY());
 			grid.moveTo(recovered, agentPt.getX(), agentPt.getY());
-			recovered.days_of_immunity = 300;
+			recovered.days_of_immunity *= 2;
 
 			context.remove(agent);	
 		}
